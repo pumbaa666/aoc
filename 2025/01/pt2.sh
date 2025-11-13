@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source "$(dirname "$0")/../../common.sh"
+source "$(dirname "$0")/../common.sh"
 
 INPUT=${1:-example-input.txt}
 if [[ ! -f "${INPUT}" ]]; then
@@ -28,9 +28,6 @@ fi
 # Sort both lists
 IFS=$'\n' sorted_left=($(sort <<<"${left_list[*]}"))
 IFS=$'\n' sorted_right=($(sort <<<"${right_list[*]}"))
-
-# print_array sorted_left
-# print_array sorted_right
 
 # Compare corresponding elements and compute differences
 accumulator=0
