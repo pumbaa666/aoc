@@ -44,23 +44,21 @@ function count_num() {
 accumulator=0
 declare -A cache
 for ((i = 0; i < left_len; i++)); do
+    ((i % 100 == 0)) && echo "Processing element ${i} / ${left_len}" >&2
     left_num=${left_list[i]}
-    if ((i % 100 == 0)); then
-        echo "Processing element ${i} / ${left_len}" >&2
-    fi
 
     # Check in cache first
-    if [[ -n ${cache[$left_num]} ]]; then
-        # echo "found in cache : ${cache[$left_num]}" >&2
-        nb_occurence=${cache[$left_num]}
+    cached_value=${cache[${left_num}]-}
+    if [[ -n ${cached_value} ]]; then
+        debug "found in cache : ${cache[${left_num}]}" >&2
+        nb_occurence=${cache[${left_num}]}
     else
         nb_occurence=$(count_num ${left_num})
-        cache[$left_num]=${nb_occurence} # Cache it
-        # echo "Storing ${nb_occurence} into cache[${left_num}] : ${cache[${left_num}]}" >&2
+        cache[${left_num}]=${nb_occurence} # Cache it
+        debug "Storing ${nb_occurence} into cache[${left_num}] : ${cache[${left_num}]}" >&2
     fi
     
     ((accumulator+=${left_num}*${nb_occurence}))
-    # echo ""
 done
 
 echo "Final accumulator value: ${accumulator}"
