@@ -4,8 +4,7 @@ source "$(dirname "$0")/../common.sh"
 
 INPUT=${1:-example-input.txt}
 if [[ ! -f "${INPUT}" ]]; then
-    echo "Input file not found: ${INPUT}"
-    exit 1
+    fatal "Input file not found: ${INPUT}"
 fi
 
 # Read input data into separate arrays (left and right)

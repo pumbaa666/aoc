@@ -4,8 +4,7 @@ source "$(dirname "$0")/../common.sh"
 
 INPUT=${1:-example-input.txt}
 if [[ ! -f "${INPUT}" ]]; then
-    echo "Input file not found: ${INPUT}"
-    exit 1
+    fatal "Input file not found: ${INPUT}"
 fi
 
 # Read input data into separate arrays (left and right)
@@ -21,8 +20,7 @@ done < "${INPUT}"
 left_len=${#left_list[@]}
 right_len=${#right_list[@]}
 if [[ ${left_len} -ne ${right_len} ]]; then
-    echo "Error: Left and right lists have different lengths (${left_len} vs ${right_len})"
-    exit 2
+    fatal "Left and right lists have different lengths (${left_len} vs ${right_len})" 2
 fi
 
 # Sort both lists
@@ -34,7 +32,7 @@ accumulator=0
 for ((i = 0; i < left_len; i++)); do
     diff=$((${sorted_left[i]} - ${sorted_right[i]}))
     diff=${diff#-}  # absolute value
-    echo "Comparing pair ${i}: ${sorted_left[i]}, ${sorted_right[i]}. Diff = ${diff}"
+    debug "Comparing pair ${i}: ${sorted_left[i]}, ${sorted_right[i]}. Diff = ${diff}"
     ((accumulator+=diff))
 done
 
