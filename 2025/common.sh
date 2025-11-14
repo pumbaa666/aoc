@@ -5,7 +5,7 @@ set -uo pipefail
 DEBUG=${DEBUG:-"false"}
 
 function debug() {
-    [[ "${DEBUG}" == "true" ]] && echo "[DEBUG] ${@}" >&2
+    [[ "${DEBUG}" == "true" ]] && echo -e "[DEBUG] ${@}" >&2
 }
 
 function fatal() {
@@ -20,7 +20,7 @@ function fatal() {
         error_code=${last_elem}
         unset args[-1]
     fi
-    echo "[FATAL] ${args[@]}" >&2
+    echo -e "[FATAL] ${args[@]}" >&2
     exit ${error_code}
 }
 
