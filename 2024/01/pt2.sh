@@ -2,11 +2,6 @@
 
 source "$(dirname "$0")/../common.sh"
 
-INPUT=${1:-example-input.txt}
-if [[ ! -f "${INPUT}" ]]; then
-    fatal "Input file not found: ${INPUT}"
-fi
-
 # Read input data into separate arrays (left and right)
 left_list=()
 right_list=()

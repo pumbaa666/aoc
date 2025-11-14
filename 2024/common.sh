@@ -3,6 +3,11 @@
 set -uo pipefail
 
 DEBUG=${DEBUG:-"false"}
+FILE_ABS_PATH="$(realpath ${BASH_SOURCE[1]})" # Absolute file name of the script sourcing me (common.sh)
+FILE_PATH=${FILE_ABS_PATH%/*}                 # Absolute path
+FILE_NAME=${FILE_ABS_PATH##*/}                # File name (with extention)
+FILE_EXT=${FILE_NAME##*.}                     # File extention
+FILE_PREFIX=${FILE_NAME%.*}                   # File name (without extention)
 
 function debug() {
     [[ "${DEBUG}" == "true" ]] && echo -e "[DEBUG] ${@}" >&2
@@ -37,3 +42,9 @@ function print_array() {
         echo ")";
     done
 }
+
+# File input (puzzle)
+INPUT=${1:-inputs/example-input.$FILE_PREFIX}
+if [[ ! -f "${INPUT}" ]]; then
+    fatal "Input file not found: ${INPUT}"
+fi

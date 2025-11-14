@@ -2,11 +2,6 @@
 
 source "$(dirname "$0")/../common.sh"
 
-INPUT=${1:-example-input.txt}
-if [[ ! -f "${INPUT}" ]]; then
-    fatal "Input file not found: ${INPUT}"
-fi
-
 # Read input data into REPORTS array
 REPORTS=()
 while IFS= read -r line; do
