@@ -6,7 +6,7 @@ source "$(dirname "$0")/../common.sh"
 INSTRUCTIONS=""
 while IFS= read -r line; do
     INSTRUCTIONS="${INSTRUCTIONS}${line}"
-done < "${INPUT}"
+done < "${PUZZLE_INPUT_FILE}"
 INSTRUCTIONS="do()${INSTRUCTIONS}don't()"
 debug "Full INSTRUCTIONS : $INSTRUCTIONS"
 

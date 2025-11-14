@@ -44,7 +44,7 @@ function print_array() {
 }
 
 # File input (puzzle)
-INPUT=${1:-inputs/example-input.$FILE_PREFIX}
-if [[ ! -f "${INPUT}" ]]; then
-    fatal "Input file not found: ${INPUT}"
+PUZZLE_INPUT_FILE=${1:-inputs/example-input.$FILE_PREFIX}
+if [[ ! -f "${PUZZLE_INPUT_FILE}" ]]; then
+    fatal "Input file not found: ${PUZZLE_INPUT_FILE}"
 fi

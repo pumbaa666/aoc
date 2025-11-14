@@ -6,7 +6,7 @@ source "$(dirname "$0")/../common.sh"
 INSTRUCTIONS=""
 while IFS= read -r line; do
     INSTRUCTIONS="${INSTRUCTIONS}${line}"
-done < "${INPUT}"
+done < "${PUZZLE_INPUT_FILE}"
 
 # Valid input example : mul(X,Y) # X and Y can be 3 digits max
 mul_regex="mul\(([0-9]{1,3}),([0-9]{1,3})\)"

@@ -7,7 +7,7 @@ REPORTS=()
 while IFS= read -r line; do
     read -r report <<< ${line}
     REPORTS+=("$report")
-done < "${INPUT}"
+done < "${PUZZLE_INPUT_FILE}"
 
 function check_report_is_safe () {
     # Safety checks

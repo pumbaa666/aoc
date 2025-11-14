@@ -9,7 +9,7 @@ while IFS= read -r line; do
     read -r left right <<< ${line}
     left_list+=("$left")
     right_list+=("$right")
-done < "${INPUT}"
+done < "${PUZZLE_INPUT_FILE}"
 
 # Check that both lists have the same length
 left_len=${#left_list[@]}
