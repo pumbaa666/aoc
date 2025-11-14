@@ -44,7 +44,7 @@ function count_num() {
 accumulator=0
 declare -A cache
 for ((i = 0; i < left_len; i++)); do
-    ((i % 100 == 0)) && echo "Processing element ${i} / ${left_len}" >&2
+    ((i % 100 == 0)) && debug "Processing element ${i} / ${left_len}"
     left_num=${left_list[i]}
 
     # Check in cache first
