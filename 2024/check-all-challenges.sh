@@ -1,8 +1,16 @@
 #!/bin/bash
 
+day_min="${1:-01}"
+day_max="${2:-31}"
+
 input_types=("example-input" "real-input")
 for day in $(find . -mindepth 1 -maxdepth 1 -type d | sort); do
-    echo "Day ${day}"
+    day_str=$(realpath --relative-to="." ${day})
+
+    # Skip irrelevant days
+    [[ "$day_str" < "$day_min" || "$day_str" > "$day_max" ]] && continue
+
+    echo "Day ${day_str}"
     for((part = 1; part <= 2; part++)); do
         echo -n "  Part ${part}"
 
