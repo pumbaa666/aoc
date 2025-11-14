@@ -10,11 +10,13 @@ function debug() {
 
 function fatal() {
     local error_code=1
+    [[ $# == 0 ]] && exit ${error_code}
+    
     local args=( "$@" )
     
     # if the last parameter is a 8 bit number, set the value to error_code and don't print it
     local last_elem=${args[-1]}
-    if ((last_elem > 0 && last_elem < 256)); then
+    if [[ ${last_elem} =~ [0-9]+ && ${last_elem} -gt 0 && ${last_elem} -lt 256 ]]; then
         error_code=${last_elem}
         unset args[-1]
     fi
