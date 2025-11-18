@@ -23,7 +23,7 @@ function find_xmas() {
     local dx=${2:-}
     local dy=${3:-}
 
-    [[ -z ${starting_pos} ]] && fatal "starting_pos is empty" 10
+    [[ -z "${starting_pos}" ]] && fatal "starting_pos is empty" 10
     [[ "${dx}" =~ \-?[0-9]+ ]] || fatal "dx must be an integer" 10
     [[ "${dy}" =~ \-?[0-9]+ ]] || fatal "dy must be an integer" 10
 
