@@ -18,7 +18,7 @@ while IFS= read -r line; do
     ((nb_rows++))
 done < "${PUZZLE_INPUT_FILE}"
 
-find_xmas() {
+function find_xmas() {
     local starting_pos=${1:-}
     local dx=${2:-}
     local dy=${3:-}
