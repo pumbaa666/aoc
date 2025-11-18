@@ -24,15 +24,15 @@ function find_xmas() {
     local dy=${3:-}
 
     [[ -z ${starting_pos} ]] && fatal "starting_pos is empty" 10
-    [[ ${dx} =~ \-?[0-9]+ ]] || fatal "dx must be an integer" 10
-    [[ ${dy} =~ \-?[0-9]+ ]] || fatal "dy must be an integer" 10
+    [[ "${dx}" =~ \-?[0-9]+ ]] || fatal "dx must be an integer" 10
+    [[ "${dy}" =~ \-?[0-9]+ ]] || fatal "dy must be an integer" 10
 
     local next_x next_y
     IFS=, read -r next_x next_y <<< ${starting_pos}
-    [[ ${next_x} =~ [0-9]+ ]] || fatal "next_x must be an integer" 11
-    [[ ${next_y} =~ [0-9]+ ]] || fatal "next_y must be an integer" 11
+    [[ "${next_x}" =~ [0-9]+ ]] || fatal "next_x must be an integer" 11
+    [[ "${next_y}" =~ [0-9]+ ]] || fatal "next_y must be an integer" 11
 
-    debug "next_x = $next_x / next_y = $next_y / dx = $dx / dy = $dy"
+    debug "next_x = ${next_x} / next_y = ${next_y} / dx = ${dx} / dy = ${dy}"
 
     local word="${grid[$starting_pos]}"
     local i next_char key
@@ -59,7 +59,6 @@ for((y = 0; y < nb_rows; y++)); do
     for((x = 0; x < nb_columns; x++)); do
         key="${x},${y}"
         char="${grid[$key]}"
-        # echo -n "${char}" >&2
         if [[ "${char}" == "X" ]]; then
             debug
             # Check the 8 cardinal directions
