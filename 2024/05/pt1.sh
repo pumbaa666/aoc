@@ -18,7 +18,7 @@ while IFS= read -r line; do
     fi
 done < "${PUZZLE_INPUT_FILE}"
 
-function get_middle_page_of_correct_report( {
+function get_middle_page_of_correct_report() {
     local report="${1:-}"
     debug "${report}"
 
@@ -45,7 +45,7 @@ function get_middle_page_of_correct_report( {
     local middle_page_value="${pages[$middle_page_index]}"
     debug "Okay desu ! pages[${middle_page_index}] = ${middle_page_value}"
     echo "${middle_page_value}"
-})
+}
 
 # Main logic
 nb_reports="${#REPORTS[@]}"
