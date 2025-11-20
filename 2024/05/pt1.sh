@@ -3,18 +3,18 @@
 source "$(dirname "$0")/../common.sh"
 
 # Read input data
-declare -A rules
-rules_regex="[0-9]+\|[0-9]"
+declare -A RULES
+readonly rules_regex="[0-9]+\|[0-9]"
 
-reports=()
-report_regex="[0-9]+,"
+REPORTS=()
+readonly report_regex="[0-9]+,"
 
 while IFS= read -r line; do
     if [[ "${line}" =~ ${rules_regex} ]]; then
         IFS='|' read -r lhs rhs <<< ${line}
-        rules["${rhs}|${lhs}"]="1"
+        RULES["${rhs}|${lhs}"]="1"
     elif [[ "${line}" =~ ${report_regex} ]]; then
-        reports+=( ${line} )
+        REPORTS+=( ${line} )
     fi
 done < "${PUZZLE_INPUT_FILE}"
 
@@ -32,9 +32,9 @@ function get_middle_page_of_correct_report( {
         for((j = i + 1; j < nb_pages; j++)); do
             next_page="${pages[$j]}"
             key="${page}|${next_page}"
-            rule="${rules[$key]:-0}"
+            rule="${RULES[$key]:-0}"
             if [[ "${rule}" == "1" ]]; then
-                debug "  ${page} should not follow ${next_page}. rules[${key}] : ${rule}"
+                debug "  ${page} should not follow ${next_page}. RULES[${key}] : ${rule}"
                 echo "0"
                 return
             fi
@@ -48,10 +48,10 @@ function get_middle_page_of_correct_report( {
 })
 
 # Main logic
-nb_reports="${#reports[@]}"
+nb_reports="${#REPORTS[@]}"
 accumulator=0
 for((i = 0; i < nb_reports; i++)); do
-    report="${reports[$i]}"
+    report="${REPORTS[$i]}"
     middle_page="$(get_middle_page_of_correct_report ${report})"
     ((accumulator+=middle_page))
 done
