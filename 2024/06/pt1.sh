@@ -34,8 +34,12 @@ while IFS= read -r line; do
 done < "${PUZZLE_INPUT_FILE}"
 
 function clean_terminal() {
-    printf '%s%s' "${TPUT_HOME}" "${TPUT_ED}"
-    tput cnorm # Restore cursor
+    if [[ "${DEBUG}" == "true" ]]; then
+        # Print the next lines below the maze ($NB_ROWS)
+        TPUT_HOME=$(tput cup ${NB_ROWS} 0)
+        printf '%s%s' "${TPUT_HOME}" "${TPUT_ED}"
+        tput cnorm # Restore cursor
+    fi
 }
 
 # Capture SIGINT (ctrl-C) interruption to clean the terminal before exiting
@@ -98,7 +102,6 @@ function solve_maze() {
 
         if (( x < 0  || x >= ${NB_COLUMNS} || y < 0  || y >= ${NB_ROWS} )); then
             # We're out  of bounds, the maze is solved
-            clean_terminal
             return 0
         fi
 
@@ -131,20 +134,22 @@ function solve_maze() {
 }
 
 # Init screen (for clever echo without flickering)
-clear
-trap signal_handler INT
-tput civis    # hide cursor
-SCREEN_HEIGHT=$(tput lines)
-SCREEN_WIDTH=$(tput cols)
-TPUT_HOME=$(tput cup 0 0)
-TPUT_ED=$(tput ed)
-TPUT_EL=$(tput el)
-# ROWS=$(tput lines)
-TPUT_COLS=$(tput cols)
+if [[ "${DEBUG}" == "true" ]]; then
+    clear
+    trap signal_handler INT
+    tput civis    # hide cursor
+    SCREEN_HEIGHT=$(tput lines)
+    SCREEN_WIDTH=$(tput cols)
+    TPUT_HOME=$(tput cup 0 0)
+    TPUT_ED=$(tput ed)
+    TPUT_EL=$(tput el)
+    # ROWS=$(tput lines)
+    TPUT_COLS=$(tput cols)
+fi
 
 # Main logic
-solve_maze "${STARTING_LOCATION}" "${STARTING_DIRECTION}"
+solve_maze "${STARTING_LOCATION}" "${STARTING_DIRECTION}";
+result=$?
 clean_terminal
-
-debug "-------------------------"
+(( ${result} == 1 )) && echo "Maze is unsolvabled"
 echo "Distinct positions visited : ${#VISITED[@]}"
