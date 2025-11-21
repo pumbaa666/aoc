@@ -4,18 +4,18 @@ source "$(dirname "$0")/../common.sh"
 
 # Read input data into a grid (associative array)
 # The key are X,Y coordinates
-nb_columns=0
-nb_rows=0
+NB_COLUMNS=0
+NB_ROWS=0
 declare -A grid
 while IFS= read -r line; do
-    nb_columns="${#line}"
+    NB_COLUMNS="${#line}"
     
-    for((x = 0; x < nb_columns; x++)); do
-        key="${x},${nb_rows}"
+    for((x = 0; x < NB_COLUMNS; x++)); do
+        key="${x},${NB_ROWS}"
         grid[$key]="${line:x:1}"
     done
 
-    ((nb_rows++))
+    ((NB_ROWS++))
 done < "${PUZZLE_INPUT_FILE}"
 
 function find_xmas() {
@@ -55,8 +55,8 @@ function find_xmas() {
 
 # Main logic
 xmas_found=0
-for((y = 0; y < nb_rows; y++)); do
-    for((x = 0; x < nb_columns; x++)); do
+for((y = 0; y < NB_ROWS; y++)); do
+    for((x = 0; x < NB_COLUMNS; x++)); do
         key="${x},${y}"
         char="${grid[$key]}"
         if [[ "${char}" == "X" ]]; then
