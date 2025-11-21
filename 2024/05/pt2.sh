@@ -46,46 +46,63 @@ function check_report_validity() {
 
 function order_and_get_middle_page_of_incorrect_report() {
     local report="${1:-}"
-    debug "${report}"
+    debug "Sorting ${report}"
 
     local pages
     IFS=',' read -r -a pages <<< ${report}
     local nb_pages="${#pages[@]}"
     
-    local i j page next_page key rule
+    local i j page next_page key rule tmp
     for((i = 0; i < nb_pages; i++)); do
-        # TODO
         page="${pages[$i]}"
-        # for((j = i + 1; j < nb_pages; j++)); do
-        #     next_page="${pages[$j]}"
-        #     key="${page}|${next_page}"
-        #     rule="${RULES[$key]:-0}"
-        #     if [[ "${rule}" == "1" ]]; then
-        #         debug "  ${page} should not follow ${next_page}. RULES[${key}] : ${rule}"
-        #         echo "0"
-        #         return
-        #     fi
-        # done
+        for((j = i + 1; j < nb_pages; j++)); do
+            next_page="${pages[$j]}"
+            key="${page}|${next_page}"
+            rule="${RULES[$key]:-0}"
+            if [[ "${rule}" == "1" ]]; then
+                debug "  Swapping ${page} (idx: ${i}) and ${next_page} (idx: ${j})"
+                tmp="${pages[$i]}"
+                pages[$i]="${pages[$j]}"
+                pages[$j]="${tmp}"
+                local sorted_pages="${pages[@]}"
+                sorted_pages="${sorted_pages// /,}"
+                local middle_page_value="$(order_and_get_middle_page_of_incorrect_report ${sorted_pages})"
+                debug "  Finally sorted. ${pages[@]} / middle = ${middle_page_value}"
+                echo "${middle_page_value}"
+                return
+            fi
+        done
     done
 
     local middle_page_index="$((nb_pages / 2))"
     local middle_page_value="${pages[$middle_page_index]}"
-    debug "Okay desu ! pages[${middle_page_index}] = ${middle_page_value}"
     echo "${middle_page_value}"
 }
 
 # Main logic
-nb_reports="${#REPORTS[@]}"
-for((i = 0; i < nb_reports; i++)); do
-    report="${REPORTS[$i]}"
-    check_report_validity "${report}" || INCORRECT_REPORTS+=("${report}")
-done
-
-print_array INCORRECT_REPORTS
+input_file_name="$(basename ${PUZZLE_INPUT_FILE})"
+incorrect_reports_cache_file="./inputs/incorrect_reports_${input_file_name}.cache"
+if [[ -f "${incorrect_reports_cache_file}" ]]; then
+    debug "Read incorrect reports from cache ${incorrect_reports_cache_file}"
+    readarray -t INCORRECT_REPORTS < "${incorrect_reports_cache_file}"
+else
+    debug "Finding incorrect reports and building cache"
+    nb_reports="${#REPORTS[@]}"
+    for((i = 0; i < nb_reports; i++)); do
+        report="${REPORTS[$i]}"
+        check_report_validity "${report}"
+        if [[ $? == 1 ]]; then
+            INCORRECT_REPORTS+=("${report}")
+            echo "${report}" >> "${incorrect_reports_cache_file}"
+        fi
+    done
+fi
 
 nb_reports="${#INCORRECT_REPORTS[@]}"
 accumulator=0
 for((i = 0; i < nb_reports; i++)); do
+    debug
+    debug "Processing incorrect report ${i}/${nb_reports}"
     report="${INCORRECT_REPORTS[$i]}"
     middle_page="$(order_and_get_middle_page_of_incorrect_report ${report})"
     ((accumulator+=middle_page))
