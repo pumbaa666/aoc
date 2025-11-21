@@ -82,7 +82,7 @@ function print_grid() {
         done
         printf '%-*.*s%s\n' ${TPUT_COLS} ${TPUT_COLS} "${line}" "${TPUT_EL}"
     done
-    printf '%s%s%s' "[${#VISITED[@]}]" "${TPUT_ED}" "${TPUT_HOME}"
+    printf '%s%s%s' "[Visited : ${#VISITED[@]}]" "${TPUT_ED}" "${TPUT_HOME}"
 }
 
 function solve_maze() {
