@@ -69,14 +69,14 @@ function order_and_get_middle_page_of_incorrect_report() (
                 order_and_get_middle_page_of_incorrect_report ${sorted_pages}
                 local middle_page_value=$?
                 debug "  Finally sorted. ${pages[@]} / middle = ${middle_page_value}"
-                return ${middle_page_value}
+                return ${middle_page_value} # small hack : returning middle page num as error code TODO find a better way
             fi
         done
     done
 
     local middle_page_index="$((nb_pages / 2))"
     local middle_page_value="${pages[$middle_page_index]}"
-    return ${middle_page_value}
+    return ${middle_page_value} # same
 )
 
 # Main logic
