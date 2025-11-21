@@ -23,7 +23,7 @@ while IFS= read -r line; do
         case "${char}" in
             '^') STARTING_LOCATION="${key}"
                  STARTING_DIRECTION="${char}"
-                 VISITED[$STARTING_LOCATION]="1"
+                 VISITED[$STARTING_LOCATION]="^" # Save the facing direction into visited spot
                  char='.' # Starting location is a free space
                  ;;
         esac
@@ -73,7 +73,7 @@ function print_grid() {
             key="${x},${y}"
             if [[ "${key}" == "${current_location}" ]]; then
                 char="${current_direction}"
-            elif [[ ${VISITED[$key]:-0} == "1" ]]; then
+            elif [[ -n ${VISITED[$key]:-} ]]; then
                 char="X"
             else
                 char="${GRID[$key]}"
@@ -119,7 +119,15 @@ function solve_maze() {
         else
             # Moving to free space
             current_location="${new_location}"
-            VISITED[$current_location]=1
+
+            # If we already visited this spot facing that direction...
+            if [[ "${VISITED[$current_location]:-X}" == *${current_direction}* ]]; then
+                # ... we are stuck !
+                return 1
+            else
+                # Add the facing direction to the visited spots
+                VISITED[$current_location]="${VISITED[$current_location]:-}${current_direction}"
+            fi
         fi
 
         if [[ "${DEBUG}" == "true" ]]; then
@@ -127,10 +135,6 @@ function solve_maze() {
             sleep 0.01
         fi
     done
-
-    echo "Maze is unsolvabled" # /!\ unreachable code
-    clean_terminal
-    return 1
 }
 
 # Init screen (for clever echo without flickering)
