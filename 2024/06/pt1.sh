@@ -88,16 +88,16 @@ function solve_maze() {
             VISITED[$current_location]=1
         fi
 
-        # clear
-        # print_grid  "${current_location}" "${current_direction}"
-        # sleep 0.1
+        if [[ "${DEBUG}" == "true" ]]; then
+            clear
+            print_grid  "${current_location}" "${current_direction}"
+            sleep 0.05
+        fi
     done
 
-    echo "Maze is unsolvabled"
+    echo "Maze is unsolvabled" # /!\ unreachable code
     return 1
 }
-
-print_grid "${STARTING_LOCATION}" "${STARTING_DIRECTION}"
 
 # Main logic
 solve_maze "${STARTING_LOCATION}" "${STARTING_DIRECTION}"
