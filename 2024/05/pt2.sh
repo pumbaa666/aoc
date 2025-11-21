@@ -44,7 +44,7 @@ function check_report_validity() {
     return 0
 }
 
-function order_and_get_middle_page_of_incorrect_report() {
+function order_and_get_middle_page_of_incorrect_report() (
     local report="${1:-}"
     debug "Sorting ${report}"
 
@@ -66,22 +66,22 @@ function order_and_get_middle_page_of_incorrect_report() {
                 pages[$j]="${tmp}"
                 local sorted_pages="${pages[@]}"
                 sorted_pages="${sorted_pages// /,}"
-                local middle_page_value="$(order_and_get_middle_page_of_incorrect_report ${sorted_pages})"
+                order_and_get_middle_page_of_incorrect_report ${sorted_pages}
+                local middle_page_value=$?
                 debug "  Finally sorted. ${pages[@]} / middle = ${middle_page_value}"
-                echo "${middle_page_value}"
-                return
+                return ${middle_page_value}
             fi
         done
     done
 
     local middle_page_index="$((nb_pages / 2))"
     local middle_page_value="${pages[$middle_page_index]}"
-    echo "${middle_page_value}"
-}
+    return ${middle_page_value}
+)
 
 # Main logic
 input_file_name="$(basename ${PUZZLE_INPUT_FILE})"
-incorrect_reports_cache_file="./inputs/incorrect_reports_${input_file_name}.cache"
+incorrect_reports_cache_file="${FILE_PATH}/inputs/incorrect_reports_${input_file_name}.cache"
 if [[ -f "${incorrect_reports_cache_file}" ]]; then
     debug "Read incorrect reports from cache ${incorrect_reports_cache_file}"
     readarray -t INCORRECT_REPORTS < "${incorrect_reports_cache_file}"
@@ -100,12 +100,19 @@ fi
 
 nb_reports="${#INCORRECT_REPORTS[@]}"
 accumulator=0
+declare bg_process_pid
 for((i = 0; i < nb_reports; i++)); do
-    debug
-    debug "Processing incorrect report ${i}/${nb_reports}"
+    debug "Processing incorrect report in background $((i+1))/${nb_reports}"
     report="${INCORRECT_REPORTS[$i]}"
-    middle_page="$(order_and_get_middle_page_of_incorrect_report ${report})"
-    ((accumulator+=middle_page))
+    middle_page="$(order_and_get_middle_page_of_incorrect_report ${report})" & bg_process_pid+=($!)
+done
+
+for((i = 0; i < nb_reports; i++)); do
+    pid="${bg_process_pid[$i]}"
+    debug "Waiting for bg process PID: ${pid}"
+    wait ${pid}
+    result=$?
+    ((accumulator+=result))
 done
 
 debug "-------------------------"
