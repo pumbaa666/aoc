@@ -15,7 +15,7 @@ done < "${PUZZLE_INPUT_FILE}"
 left_len=${#left_list[@]}
 right_len=${#right_list[@]}
 if [[ ${left_len} -ne ${right_len} ]]; then
-    fatal "Left and right lists have different lengths (${left_len} vs ${right_len})" 2
+    fatal "Left and right lists have different lengths (${left_len} vs ${right_len})" 10
 fi
 
 # Sort both lists
