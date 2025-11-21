@@ -1,0 +1,23 @@
+$ time ./pt2-single-process.sh inputs/real-input.pt2 
+Sum of middle pages : 4743
+real    0m20.912s
+user    0m14.150s
+sys     0m6.986s
+
+$ time ./pt2-multi-tmp-files.sh inputs/real-input.pt2 
+Sum of middle pages : 4743
+real    0m11.143s
+user    0m45.481s
+sys     2m15.644s
+
+$ time ./pt2-multi-string.sh inputs/real-input.pt2 
+Sum of middle pages : 4743
+real    0m9.115s
+user    0m30.978s
+sys     1m54.878s
+
+$ time ./pt2-multi-error_code.sh inputs/real-input.pt2 
+Sum of middle pages : 4743
+real    0m2.168s
+user    0m18.858s
+sys     0m16.800s
