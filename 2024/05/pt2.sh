@@ -44,6 +44,8 @@ function check_report_validity() {
     return 0
 }
 
+# Parallelizable function
+# https://stackoverflow.com/questions/25909718/return-code-of-background-process-bash
 function order_and_get_middle_page_of_incorrect_report() (
     local report="${1:-}"
     debug "Sorting ${report}"
