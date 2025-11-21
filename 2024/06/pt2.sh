@@ -13,6 +13,7 @@ NB_ROWS=0
 STARTING_LOCATION=""
 STARTING_DIRECTION=""
 declare -A GRID
+declare -A GRID_INIT
 declare -A VISITED
 while IFS= read -r line; do
     NB_COLUMNS="${#line}"
@@ -28,6 +29,7 @@ while IFS= read -r line; do
                  ;;
         esac
         GRID[$key]="${char}"
+        GRID_INIT[$key]="${char}"
     done
 
     ((NB_ROWS++))
@@ -46,6 +48,18 @@ function clean_terminal() {
 function signal_handler() {
     clean_terminal
     exit 0
+}
+
+function reset_grid() {
+    local x y key
+    for((y = 0; y < NB_ROWS; y++)); do
+        for((x = 0; x < NB_COLUMNS; x++)); do
+            key="${x},${y}"
+            GRID[$key]="${GRID_INIT[$key]}"
+            VISITED[$key]=""
+        done
+    done
+    VISITED[$STARTING_LOCATION]="^"
 }
 
 function print_grid() {
@@ -71,6 +85,7 @@ function print_grid() {
         line=""
         for((x = left_bound; x < right_bound; x++)); do
             key="${x},${y}"
+            # debug "  printing '$key'"
             if [[ "${key}" == "${current_location}" ]]; then
                 char="${current_direction}"
             elif [[ -n ${VISITED[$key]:-} ]]; then
@@ -82,13 +97,14 @@ function print_grid() {
         done
         printf '%-*.*s%s\n' ${TPUT_COLS} ${TPUT_COLS} "${line}" "${TPUT_EL}"
     done
-    printf '%s%s%s' "[Visited : ${#VISITED[@]}]" "${TPUT_ED}" "${TPUT_HOME}"
+    printf '%s%s%s' "[Blocking : ${nb_blocking_maze}]" "${TPUT_ED}" "${TPUT_HOME}"
 }
 
 function solve_maze() {
     local current_location=${1}
     local current_direction=${2}
 
+    local x y
     while true; do
         # Make a move
         IFS=',' read -r x y <<< ${current_location}
@@ -105,9 +121,9 @@ function solve_maze() {
             return 0
         fi
 
-        new_location="${x},${y}"
-        char="${GRID[$new_location]}"
-        if [[ "${char}" == "#" ]]; then
+        local new_location="${x},${y}"
+        local char="${GRID[$new_location]}"
+        if [[ "${char}" == "#" || "${char}" == "O" ]]; then
             # We've hit a wall, let's turn right
             case "${current_direction}" in
                 '^') current_direction=">";;
@@ -132,7 +148,7 @@ function solve_maze() {
 
         if [[ "${DEBUG}" == "true" ]]; then
             print_grid  "${current_location}" "${current_direction}"
-            sleep 0.01
+            sleep 0.05
         fi
     done
 }
@@ -152,8 +168,29 @@ if [[ "${DEBUG}" == "true" ]]; then
 fi
 
 # Main logic
-solve_maze "${STARTING_LOCATION}" "${STARTING_DIRECTION}";
-result=$?
+nb_blocking_maze=0
+blocking_maze=()
+i=0
+total_combination=$(( NB_ROWS * NB_COLUMNS ))
+for((y = 0; y < NB_ROWS; y++)); do
+    for((x = 0; x < NB_COLUMNS; x++)); do
+        ((i++))
+        echo "$i / $total_combination" >&2
+        reset_grid
+
+        key="${x},${y}"
+        [[ "${key}" == "${STARTING_LOCATION}" || "${GRID_INIT[$key]}" == "#" ]] && continue
+
+        # debug "Putting an obstacle at ${key}"
+        GRID[$key]="O"
+        solve_maze "${STARTING_LOCATION}" "${STARTING_DIRECTION}"
+        if [[ $? == 1 ]]; then
+            ((nb_blocking_maze++))
+            blocking_maze+=($key)
+        fi
+    done
+done
+
 clean_terminal
-(( ${result} == 1 )) && echo "Maze is unsolvabled"
-echo "Distinct positions visited : ${#VISITED[@]}"
+echo "Nb possible obstacle : ${nb_blocking_maze}"
+# printf "%s\n" "${blocking_maze[@]}"
