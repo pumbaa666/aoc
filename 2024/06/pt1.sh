@@ -4,9 +4,10 @@ source "$(dirname "$0")/../common.sh"
 
 # Read input data into a grid (associative array)
 # The key are X,Y coordinates
-#   "^" is the starting location
+#   "^" is the guard starting location, facing up
 #   "#" are obstacles
 #   "." are free spaces
+#   "X" are vivsited free spaces
 NB_COLUMNS=0
 NB_ROWS=0
 STARTING_LOCATION=""
@@ -60,7 +61,7 @@ function print_grid() {
     local down_bound=$((current_y + SCREEN_HEIGHT / 2 - 1)) # -1 to let a space for the current visited location
     (( down_bound > NB_ROWS )) && down_bound=${NB_ROWS}
 
-    # Print the portion of the grid
+    # Print the portion of the grid, centred on the guard (current_location)
     local x y key char line
     for((y = up_bound; y < down_bound; y++)); do
         line=""
