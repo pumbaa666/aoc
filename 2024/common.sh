@@ -9,6 +9,10 @@ FILE_NAME=${FILE_ABS_PATH##*/}                # File name (with extention)
 FILE_EXT=${FILE_NAME##*.}                     # File extention
 FILE_PREFIX=${FILE_NAME%.*}                   # File name (without extention)
 
+# Default parameters
+PUZZLE_INPUT_FILE="inputs/example-input.$FILE_PREFIX"
+ANIMATION_SLEEP_TIME="0.05"
+
 function debug() {
     [[ "${DEBUG}" == "true" ]] && echo -e "[DEBUG] ${@}" >&2
 }
@@ -29,6 +33,32 @@ function fatal() {
     exit ${error_code}
 }
 
+function halp() {
+    echo "Common help : TODO"
+    if declare -F help > /dev/null; then
+        echo ""
+        help
+    fi
+}
+
+# REMAINING_ARGS=()
+function parse_common_parameters() {
+    REMAINING_ARGS=()
+
+    while [[ "$#" -gt 0 ]]; do
+        case $1 in
+            --input=*|--puzzle=*)  PUZZLE_INPUT_FILE="${1#*=}";;
+            -i|-p)                 PUZZLE_INPUT_FILE="${2}";;
+            -d)                    DEBUG="true";;
+            --debug=*)             DEBUG="${1#*=}";;
+            --sleep=*)             ANIMATION_SLEEP_TIME="${1#*=}";;
+            -h|--help)             halp; exit 0;;
+            *)                     REMAINING_ARGS+=("$1");;
+        esac
+        shift
+    done
+}
+
 function print_array() { 
     local key value name;
     for name in "$@";
@@ -43,8 +73,8 @@ function print_array() {
     done
 }
 
+parse_common_parameters "$@"
 # File input (puzzle)
-PUZZLE_INPUT_FILE=${1:-inputs/example-input.$FILE_PREFIX}
 if [[ ! -f "${PUZZLE_INPUT_FILE}" ]]; then
     fatal "Input file not found: ${PUZZLE_INPUT_FILE}" 1
 fi
