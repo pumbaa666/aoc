@@ -52,9 +52,14 @@ function signal_handler() {
 function solve_maze() {
     local current_location=${1}
     local current_direction=${2}
-    local obstacle_location=${3}
+    local obstacle_location=${3:-}
     
-    GRID[$obstacle_location]="#"
+    # Set an obstacle. Since it's not the first maze solving, also reset the VISITED locations
+    if [[ -n "${obstacle_location}" ]]; then
+        GRID[$obstacle_location]="#"
+        VISITED=()
+        VISITED[$STARTING_LOCATION]="^"
+    fi
 
     local x y
     while true; do
@@ -101,35 +106,35 @@ function solve_maze() {
 }
 
 # Main logic
+
+# 1. Solve the maze a first time to get all visited location.
+solve_maze "${STARTING_LOCATION}" "${STARTING_DIRECTION}"
+
+# 2. Then put an obstacle on each visited location
 nb_blocking_maze=0
 i=0
-total_combination=$(( NB_ROWS * NB_COLUMNS ))
+nb_visited_locations="${#VISITED[@]}"
 declare bg_process_pid
-for((y = 0; y < NB_ROWS; y++)); do
-    for((x = 0; x < NB_COLUMNS; x++)); do
-        ((i++))
-        debug
-        debug "Spawning process ${i} / ${total_combination}"
-        # debug "(nb jobs : $(jobs | wc -l))"
+for key in ${!VISITED[@]}; do
+    ((i++))
+    debug "Spawning process ${i} / ${nb_visited_locations}"
+    # debug "(nb jobs : $(jobs | wc -l))"
 
-        key="${x},${y}"
-        [[ "${key}" == "${STARTING_LOCATION}" || "${GRID[$key]}" == "#" ]] && continue
+    [[ "${key}" == "${STARTING_LOCATION}" || "${GRID[$key]}" == "#" ]] && continue
 
-        (solve_maze "${STARTING_LOCATION}" "${STARTING_DIRECTION}" "${key}") & bg_process_pid+=($!)
+    (solve_maze "${STARTING_LOCATION}" "${STARTING_DIRECTION}" "${key}") & bg_process_pid+=($!)
 
-        while (( $(jobs | wc -l) >= "${NB_BG_PROCESS}" )); do
-            debug "waiting a bit. Nb jobs : $(jobs | wc -l)";
-            sleep 0.15;
-            # debug "  after : $(jobs | wc -l)"
-        done
+    while (( $(jobs | wc -l) >= "${NB_BG_PROCESS}" )); do
+        debug "waiting a bit. Nb jobs : $(jobs | wc -l)";
+        sleep 0.15;
+        debug "  after : $(jobs | wc -l)"
     done
 done
 
-print_array bg_process_pid
 nb_pid="${#bg_process_pid[@]}"
 for((i = 0; i < nb_pid; i++)); do
     pid="${bg_process_pid[$i]}"
-    debug "Waiting for bg process PID: ${pid} (${i} / ${nb_pid})"
+    # debug "Waiting for bg process PID: ${pid} (${i} / ${nb_pid})"
     wait ${pid}
     result=$?
     ((nb_blocking_maze+=result))
