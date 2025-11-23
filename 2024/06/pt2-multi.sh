@@ -33,7 +33,6 @@ while IFS= read -r line; do
 
     ((NB_ROWS++))
 done < "${PUZZLE_INPUT_FILE}"
-# INIT_GRID_SNAPSHOT=$(declare -p GRID | sed 's/^declare /declare -g /') # Add "-g" to declare it globaly, or else it will be declare it locally in the reset_grid function
 
 function clean_terminal() {
     if [[ "${DEBUG}" == "anim" ]]; then
@@ -50,57 +49,12 @@ function signal_handler() {
     exit 0
 }
 
-# function reset_grid() {
-#     VISITED=()
-#     VISITED[$STARTING_LOCATION]="^"
-
-#     GRID=()
-#     eval "${INIT_GRID_SNAPSHOT}"
-# }
-
-function print_grid() {
-    local current_location="${1}"
-    local current_direction="${2}"
-
-    local current_x current_y
-    IFS=',' read -r current_x current_y <<< ${current_location}
-
-    # Calculate bounds to only print a portion of the maze to fit in the terminal, centered on our current location
-    local left_bound=$((current_x - SCREEN_WIDTH / 2))
-    (( left_bound < 0 )) && left_bound=0
-    local right_bound=$((current_x + SCREEN_WIDTH / 2))
-    (( right_bound > NB_COLUMNS )) && right_bound=${NB_COLUMNS}
-    local up_bound=$((current_y - SCREEN_HEIGHT / 2))
-    (( up_bound < 0 )) && up_bound=0
-    local down_bound=$((current_y + SCREEN_HEIGHT / 2 - 1)) # -1 to let a space for the current visited location
-    (( down_bound > NB_ROWS )) && down_bound=${NB_ROWS}
-
-    # Print the portion of the grid, centred on the guard (current_location)
-    local x y key char line
-    for((y = up_bound; y < down_bound; y++)); do
-        line=""
-        for((x = left_bound; x < right_bound; x++)); do
-            key="${x},${y}"
-            if [[ "${key}" == "${current_location}" ]]; then
-                char="${current_direction}"
-            elif [[ -n ${VISITED[$key]:-} ]]; then
-                char="X"
-            else
-                char="${GRID[$key]}"
-            fi
-            line="${line}${char}"
-        done
-        printf '%-*.*s%s\n' ${TPUT_COLS} ${TPUT_COLS} "${line}" "${TPUT_EL}"
-    done
-    printf '%s%s%s' "[Blocking : ${nb_blocking_maze}]" "${TPUT_ED}" "${TPUT_HOME}"
-}
-
 function solve_maze() {
     local current_location=${1}
     local current_direction=${2}
     local obstacle_location=${3}
     
-    GRID[$obstacle_location]="O"
+    GRID[$obstacle_location]="#"
 
     local x y
     while true; do
@@ -121,7 +75,7 @@ function solve_maze() {
 
         local new_location="${x},${y}"
         local char="${GRID[$new_location]}"
-        if [[ "${char}" == "#" || "${char}" == "O" ]]; then
+        if [[ "${char}" == "#" ]]; then
             # We've hit a wall, let's turn right
             case "${current_direction}" in
                 '^') current_direction=">";;
@@ -143,27 +97,8 @@ function solve_maze() {
                 VISITED[$current_location]="${VISITED[$current_location]:-}${current_direction}"
             fi
         fi
-
-        if [[ "${DEBUG}" == "anim" ]]; then
-            print_grid  "${current_location}" "${current_direction}"
-            sleep "${ANIMATION_SLEEP_TIME}"
-        fi
     done
 }
-
-# Init screen (for clever echo without flickering)
-if [[ "${DEBUG}" == "anim" ]]; then
-    clear
-    trap signal_handler INT
-    tput civis    # hide cursor
-    SCREEN_HEIGHT=$(tput lines)
-    SCREEN_WIDTH=$(tput cols)
-    TPUT_HOME=$(tput cup 0 0)
-    TPUT_ED=$(tput ed)
-    TPUT_EL=$(tput el)
-    # ROWS=$(tput lines)
-    TPUT_COLS=$(tput cols)
-fi
 
 # Main logic
 nb_blocking_maze=0
@@ -184,7 +119,8 @@ for((y = 0; y < NB_ROWS; y++)); do
 
         while (( $(jobs | wc -l) >= "${NB_BG_PROCESS}" )); do
             debug "waiting a bit. Nb jobs : $(jobs | wc -l)";
-            sleep 0.01;
+            sleep 0.15;
+            # debug "  after : $(jobs | wc -l)"
         done
     done
 done
@@ -201,4 +137,3 @@ done
 
 clean_terminal
 echo "Nb possible obstacle : ${nb_blocking_maze}"
-# printf "%s\n" "${blocking_maze[@]}"
