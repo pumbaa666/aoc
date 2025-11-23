@@ -13,7 +13,6 @@ NB_ROWS=0
 STARTING_LOCATION=""
 STARTING_DIRECTION=""
 declare -A GRID
-declare -A GRID_INIT
 declare -A VISITED
 while IFS= read -r line; do
     NB_COLUMNS="${#line}"
@@ -29,11 +28,12 @@ while IFS= read -r line; do
                  ;;
         esac
         GRID[$key]="${char}"
-        GRID_INIT[$key]="${char}"
     done
 
     ((NB_ROWS++))
 done < "${PUZZLE_INPUT_FILE}"
+INIT_GRID_SNAPSHOT=$(declare -p GRID | sed 's/^declare /declare -g /') # Add "-g" to declare it globaly, or else it will be declare it locally in the reset_grid function
+
 
 function clean_terminal() {
     if [[ "${DEBUG}" == "true" ]]; then
@@ -51,15 +51,13 @@ function signal_handler() {
 }
 
 function reset_grid() {
-    local x y key
-    for((y = 0; y < NB_ROWS; y++)); do
-        for((x = 0; x < NB_COLUMNS; x++)); do
-            key="${x},${y}"
-            GRID[$key]="${GRID_INIT[$key]}"
-            VISITED[$key]=""
-        done
-    done
+    VISITED=()
     VISITED[$STARTING_LOCATION]="^"
+
+    GRID=()
+    eval "${INIT_GRID_SNAPSHOT}"
+    # echo "Reseting GRID with '$INIT_GRID_SNAPSHOT'" >&2
+    # print_array GRID
 }
 
 function print_grid() {
@@ -179,7 +177,7 @@ for((y = 0; y < NB_ROWS; y++)); do
         reset_grid
 
         key="${x},${y}"
-        [[ "${key}" == "${STARTING_LOCATION}" || "${GRID_INIT[$key]}" == "#" ]] && continue
+        [[ "${key}" == "${STARTING_LOCATION}" || "${GRID[$key]}" == "#" ]] && continue
 
         # debug "Putting an obstacle at ${key}"
         GRID[$key]="O"
