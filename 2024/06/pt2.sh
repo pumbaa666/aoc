@@ -34,7 +34,6 @@ while IFS= read -r line; do
 done < "${PUZZLE_INPUT_FILE}"
 INIT_GRID_SNAPSHOT=$(declare -p GRID | sed 's/^declare /declare -g /') # Add "-g" to declare it globaly, or else it will be declare it locally in the reset_grid function
 
-
 function clean_terminal() {
     if [[ "${DEBUG}" == "true" ]]; then
         # Print the next lines below the maze ($NB_ROWS)
@@ -56,8 +55,6 @@ function reset_grid() {
 
     GRID=()
     eval "${INIT_GRID_SNAPSHOT}"
-    # echo "Reseting GRID with '$INIT_GRID_SNAPSHOT'" >&2
-    # print_array GRID
 }
 
 function print_grid() {
@@ -83,7 +80,6 @@ function print_grid() {
         line=""
         for((x = left_bound; x < right_bound; x++)); do
             key="${x},${y}"
-            # debug "  printing '$key'"
             if [[ "${key}" == "${current_location}" ]]; then
                 char="${current_direction}"
             elif [[ -n ${VISITED[$key]:-} ]]; then
@@ -146,7 +142,7 @@ function solve_maze() {
 
         if [[ "${DEBUG}" == "true" ]]; then
             print_grid  "${current_location}" "${current_direction}"
-            sleep 0.05
+            sleep "${ANIMATION_SLEEP_TIME}"
         fi
     done
 }
@@ -173,7 +169,7 @@ total_combination=$(( NB_ROWS * NB_COLUMNS ))
 for((y = 0; y < NB_ROWS; y++)); do
     for((x = 0; x < NB_COLUMNS; x++)); do
         ((i++))
-        echo "$i / $total_combination" >&2
+        debug "$i / $total_combination"
         reset_grid
 
         key="${x},${y}"
