@@ -34,10 +34,10 @@ while IFS= read -r line; do
 done < "${PUZZLE_INPUT_FILE}"
 
 function clean_terminal() {
-    if [[ "${DEBUG}" == "true" ]]; then
+    if [[ "${DEBUG}" == "anim" ]]; then
         # Print the next lines below the maze ($NB_ROWS)
         TPUT_HOME=$(tput cup ${NB_ROWS} 0)
-        printf '%s%s' "${TPUT_HOME}" "${TPUT_ED}"
+        printf '%s%s' "${TPUT_HOME}" "${TPUT_ED}" >&2
         tput cnorm # Restore cursor
     fi
 }
@@ -80,9 +80,9 @@ function print_grid() {
             fi
             line="${line}${char}"
         done
-        printf '%-*.*s%s\n' ${TPUT_COLS} ${TPUT_COLS} "${line}" "${TPUT_EL}"
+        printf '%-*.*s%s\n' ${TPUT_COLS} ${TPUT_COLS} "${line}" "${TPUT_EL}" >&2
     done
-    printf '%s%s%s' "[Visited : ${#VISITED[@]}]" "${TPUT_ED}" "${TPUT_HOME}"
+    printf '%s%s%s' "[Visited : ${#VISITED[@]}]" "${TPUT_ED}" "${TPUT_HOME}" >&2
 }
 
 function solve_maze() {
@@ -130,15 +130,15 @@ function solve_maze() {
             fi
         fi
 
-        if [[ "${DEBUG}" == "true" ]]; then
+        if [[ "${DEBUG}" == "anim" ]]; then
             print_grid  "${current_location}" "${current_direction}"
-            sleep 0.01
+            sleep "${ANIMATION_SLEEP_TIME}"
         fi
     done
 }
 
 # Init screen (for clever echo without flickering)
-if [[ "${DEBUG}" == "true" ]]; then
+if [[ "${DEBUG}" == "anim" ]]; then
     clear
     trap signal_handler INT
     tput civis    # hide cursor
