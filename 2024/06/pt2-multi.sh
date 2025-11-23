@@ -34,21 +34,6 @@ while IFS= read -r line; do
     ((NB_ROWS++))
 done < "${PUZZLE_INPUT_FILE}"
 
-function clean_terminal() {
-    if [[ "${DEBUG}" == "anim" ]]; then
-        # Print the next lines below the maze ($NB_ROWS)
-        TPUT_HOME=$(tput cup ${NB_ROWS} 0)
-        printf '%s%s' "${TPUT_HOME}" "${TPUT_ED}"
-        tput cnorm # Restore cursor
-    fi
-}
-
-# Capture SIGINT (ctrl-C) interruption to clean the terminal before exiting
-function signal_handler() {
-    clean_terminal
-    exit 0
-}
-
 function solve_maze() {
     local current_location=${1}
     local current_direction=${2}
@@ -58,7 +43,7 @@ function solve_maze() {
     if [[ -n "${obstacle_location}" ]]; then
         GRID[$obstacle_location]="#"
         VISITED=()
-        VISITED[$STARTING_LOCATION]="^"
+        VISITED[$current_location]="${current_direction}"
     fi
 
     local x y
@@ -127,18 +112,17 @@ for key in ${!VISITED[@]}; do
     while (( $(jobs | wc -l) >= "${NB_BG_PROCESS}" )); do
         debug "waiting a bit. Nb jobs : $(jobs | wc -l)";
         sleep 0.15;
-        debug "  after : $(jobs | wc -l)"
+        # debug "  after : $(jobs | wc -l)"
     done
 done
 
 nb_pid="${#bg_process_pid[@]}"
 for((i = 0; i < nb_pid; i++)); do
     pid="${bg_process_pid[$i]}"
-    # debug "Waiting for bg process PID: ${pid} (${i} / ${nb_pid})"
+    debug "Waiting for bg process PID: ${pid} (${i} / ${nb_pid})"
     wait ${pid}
     result=$?
     ((nb_blocking_maze+=result))
 done
 
-clean_terminal
 echo "Nb possible obstacle : ${nb_blocking_maze}"
