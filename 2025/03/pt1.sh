@@ -3,6 +3,7 @@
 source "$(dirname "$0")/../common.sh"
 
 banks=()
+NB_BATTERY_POWERED_ON=2
 
 # Read input data
 while IFS= read -r line; do
@@ -19,7 +20,7 @@ function max_joltage() {
     local highest_battery=0
     local highest_index=0
     local i battery
-    for((i = 0; i < nb_battery - 1; i++)); do
+    for((i = 0; i < nb_battery - NB_BATTERY_POWERED_ON + 1; i++)); do
         battery="${bank:i:1}"
         if ((battery > highest_battery)); then
             highest_battery=${battery}
