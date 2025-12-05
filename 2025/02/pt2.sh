@@ -2,14 +2,48 @@
 
 source "$(dirname "$0")/../common.sh"
 
+NB_BG_PROCESS=$(nproc --all 2>/dev/null || echo 8)
+
 # Read input data
 IFS=',' read -ra id_ranges < "${PUZZLE_INPUT_FILE}"
 nb_range="${#id_ranges[@]}"
 debug "Found ${nb_range} ranges"
 
+# Process the whole range
+# meant to be parallelized
+function process_range() {
+    local range=$1
+
+    local lhs rhs range_number
+    local total_char divisor nb_char
+    local accumulator=0
+    IFS='-' read -r lhs rhs <<< ${range}
+    for((range_number = lhs; range_number <= rhs; range_number++));do
+        debug "  testing $range_number"
+        total_char="${#range_number}"
+        for ((divisor = 2; divisor <= total_char; divisor++)); do
+            nb_char=$((total_char / divisor))
+            debug "    divisor = $divisor"
+            if (( total_char != nb_char * divisor )); then
+                debug "    the sub-part is not a divisor of total char (${total_char} != ${nb_char} * ${divisor})"
+                continue
+            fi
+
+            check_number_validity "${range_number}" "${nb_char}" "${divisor}"
+            if [[ $? == 0 ]]; then
+                continue
+            else
+                ((accumulator+=range_number))
+                continue 2
+            fi
+        done
+    done
+    echo "${accumulator}"
+}
+
 # Returns 0 if number is valid (no repetition)
 # Returns 1 otherwise
-function check_validity() {
+function check_number_validity() {
     local range_number=$1
     local nb_char=$2
     local nb_part=$3
@@ -35,32 +69,32 @@ function check_validity() {
 }
 
 # Main logic
-accumulator=0
+declare bg_process_pids
+declare -a tmp_files=()
 for((range_index = 0; range_index < nb_range; range_index++)); do
     range="${id_ranges[range_index]}"
     echo "Processing range $((range_index+1)) / $nb_range (${range})"
 
-    IFS='-' read -r lhs rhs <<< ${range}
-    for((range_number = lhs; range_number <= rhs; range_number++));do
-        debug "  testing $range_number"
-        total_char="${#range_number}"
-        for ((divisor = 2; divisor <= total_char; divisor++)); do
-            nb_char=$((total_char / divisor))
-            debug "    divisor = $divisor"
-            if (( total_char != nb_char * divisor )); then
-                debug "    the sub-part is not a divisor of total char (${total_char} != ${nb_char} * ${divisor})"
-                continue
-            fi
-
-            check_validity "${range_number}" "${nb_char}" "${divisor}"
-            if [[ $? == 0 ]]; then
-                continue
-            else
-                ((accumulator+=range_number))
-                continue 2
-            fi
-        done
+    tmp_file=$(mktemp)
+    tmp_files+=(${tmp_file})
+    process_range "${range}" > "${tmp_file}" &
+    bg_process_pids+=($!)
+    while (( $(jobs | wc -l) >= "${NB_BG_PROCESS}" )); do
+        debug "waiting a bit. Nb jobs : $(jobs | wc -l)";
+        sleep 1;
     done
+done
+
+# Waiting for background processes
+nb_pid="${#bg_process_pids[@]}"
+accumulator=0
+for((i = 0; i < nb_pid; i++)); do
+    pid="${bg_process_pids[$i]}"
+    echo "Waiting for bg process PID: ${pid}"
+    wait ${pid}
+    result=$(cat "${tmp_files[$i]}")
+    rm "${tmp_files[$i]}"
+    ((accumulator+=result))
 done
 
 debug "-------------------------"
