@@ -44,4 +44,4 @@ for((i = 0; i < nb_ingredients; i++)); do
 done
 
 debug "-------------------------"
-echo "Total : ${fresh_ingredients}"
+echo "${fresh_ingredients} of the available ingredient IDs are fresh"
