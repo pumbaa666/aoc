@@ -62,4 +62,4 @@ while [[ "${could_move_rolls}" == "true" ]]; do
 done
 
 debug "-------------------------"
-echo "there are ${accumulator} rolls of paper that can be accessed by a forklift"
+echo "A total of ${accumulator} rolls of paper can be removed."

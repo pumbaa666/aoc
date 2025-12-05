@@ -73,7 +73,7 @@ declare bg_process_pids
 declare -a tmp_files=()
 for((range_index = 0; range_index < nb_range; range_index++)); do
     range="${id_ranges[range_index]}"
-    echo "Processing range $((range_index+1)) / $nb_range (${range})"
+    debug "Processing range $((range_index+1)) / $nb_range (${range})"
 
     tmp_file=$(mktemp)
     tmp_files+=(${tmp_file})
@@ -90,7 +90,7 @@ nb_pid="${#bg_process_pids[@]}"
 accumulator=0
 for((i = 0; i < nb_pid; i++)); do
     pid="${bg_process_pids[$i]}"
-    echo "Waiting for bg process PID: ${pid}"
+    debug "Waiting for bg process PID: ${pid}"
     wait ${pid}
     result=$(cat "${tmp_files[$i]}")
     rm "${tmp_files[$i]}"

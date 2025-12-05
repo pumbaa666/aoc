@@ -57,4 +57,4 @@ for((y = 0; y < height; y++)); do
 done
 
 debug "-------------------------"
-echo "there are ${accumulator} rolls of paper that can be accessed by a forklift"
+echo "There are ${accumulator} rolls of paper that can be accessed by a forklift"
