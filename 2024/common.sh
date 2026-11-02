@@ -59,7 +59,7 @@ function parse_common_parameters() {
     done
 }
 
-function print_array() { 
+function print_array() {
     local key value name;
     for name in "$@";
     do
